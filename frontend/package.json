@@ -1,0 +1,28 @@
+{
+  "name": "campuswhisper-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@tsparticles/react": "^3.0.0",
+    "axios": "^1.6.2",
+    "date-fns": "^3.0.6",
+    "next": "14.0.4",
+    "nodemon": "^3.1.14",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-globe.gl": "^2.37.1",
+    "three": "^0.184.0",
+    "tsparticles": "^3.9.1",
+    "zustand": "^4.4.7"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.0",
+    "@types/react": "^18.2.42",
+    "typescript": "^5.3.2"
+  }
+}

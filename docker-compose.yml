@@ -1,0 +1,405 @@
+
+
+# # services:
+# #   postgres:
+# #     image: postgres:15-alpine
+# #     environment:
+# #       POSTGRES_USER: campuswhisper
+# #       POSTGRES_PASSWORD: secret
+# #       POSTGRES_DB: campuswhisper
+# #     volumes:
+# #       - pgdata:/var/lib/postgresql/data
+# #     ports:
+# #       - "5432:5432"
+# #     healthcheck:
+# #       test: ["CMD-SHELL", "pg_isready -U campuswhisper -d campuswhisper"]
+# #       interval: 5s
+# #       timeout: 5s
+# #       retries: 10
+
+# #   redis:
+# #     image: redis:7-alpine
+# #     ports:
+# #       - "6379:6379"
+# #     volumes:
+# #       - redisdata:/data
+# #     healthcheck:
+# #       test: ["CMD", "redis-cli", "ping"]
+# #       interval: 5s
+# #       timeout: 5s
+# #       retries: 10
+
+# #   zookeeper:
+# #     image: confluentinc/cp-zookeeper:7.5.0
+# #     environment:
+# #       ZOOKEEPER_CLIENT_PORT: 2181
+# #       ZOOKEEPER_TICK_TIME: 2000
+
+# #   kafka:
+# #     image: confluentinc/cp-kafka:7.5.0
+# #     depends_on:
+# #       - zookeeper
+# #     ports:
+# #       - "9092:9092"
+# #     environment:
+# #       KAFKA_BROKER_ID: 1
+# #       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+# #       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092"
+# #       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+# #       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+# #       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+# #       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+# #   user-service:
+# #     build: ./services/user-service
+# #     ports:
+# #       - "3001:3001"
+# #     volumes:
+# #       - ./services/user-service:/app
+# #       - /app/node_modules
+# #     command: npm run dev
+# #     environment:
+# #       DATABASE_URL: "postgresql://campuswhisper:secret@postgres:5432/campuswhisper"
+# #       REDIS_URL: "redis://redis:6379"
+# #       JWT_SECRET: supersecretkey_change_in_prod
+# #     depends_on:
+# #       postgres:
+# #         condition: service_healthy
+# #       redis:
+# #         condition: service_healthy
+
+# #   post-service:
+# #     build: ./services/post-service
+# #     ports:
+# #       - "3002:3002"
+# #     volumes:
+# #       - ./services/post-service:/app
+# #       - /app/node_modules
+# #     command: npm run dev
+# #     environment:
+# #       DATABASE_URL: "postgresql://campuswhisper:secret@postgres:5432/campuswhisper"
+# #       REDIS_URL: "redis://redis:6379"
+# #       KAFKA_BROKERS: "kafka:9092"
+# #       USER_SERVICE_URL: "http://user-service:3001"
+# #       JWT_SECRET: supersecretkey_change_in_prod
+# #     depends_on:
+# #       postgres:
+# #         condition: service_healthy
+# #       user-service:
+# #         condition: service_started
+# #       kafka:
+# #         condition: service_started
+
+# #   feed-service:
+# #     build: ./services/feed-service
+# #     ports:
+# #       - "3003:3003"
+# #     volumes:
+# #       - ./services/feed-service:/app
+# #       - /app/node_modules
+# #     command: npm run dev
+# #     environment:
+# #       REDIS_URL: "redis://redis:6379"
+# #       KAFKA_BROKERS: "kafka:9092"
+# #       POST_SERVICE_URL: "http://post-service:3002"
+# #     depends_on:
+# #       post-service:
+# #         condition: service_started
+# #       kafka:
+# #         condition: service_started
+
+# #   api-gateway:
+# #     build: ./services/api-gateway
+# #     ports:
+# #       - "3000:3000"
+# #     volumes:
+# #       - ./services/api-gateway:/app
+# #       - /app/node_modules
+# #     command: npm run dev
+# #     environment:
+# #       USER_SERVICE_URL: "http://user-service:3001"
+# #       POST_SERVICE_URL: "http://post-service:3002"
+# #       FEED_SERVICE_URL: "http://feed-service:3003"
+# #     depends_on:
+# #       user-service:
+# #         condition: service_started
+# #       post-service:
+# #         condition: service_started
+# #       feed-service:
+# #         condition: service_started
+
+# #   frontend:
+# #     build: ./frontend
+# #     ports:
+# #       - "80:3000"
+# #     volumes:
+# #       - ./frontend:/app
+# #       - /app/node_modules
+# #     command: npm run dev
+# #     environment:
+# #       NEXT_PUBLIC_API_URL: "http://localhost:3000"
+# #     depends_on:
+# #       api-gateway:
+# #         condition: service_started
+
+# # volumes:
+# #   pgdata:
+# #   redisdata:
+
+
+
+# version: "3.9"
+
+# services:
+#   redis:
+#     image: redis:7-alpine
+#     ports:
+#       - "6379:6379"
+#     volumes:
+#       - redisdata:/data
+#     healthcheck:
+#       test: ["CMD", "redis-cli", "ping"]
+#       interval: 5s
+#       timeout: 5s
+#       retries: 10
+
+#   zookeeper:
+#     image: confluentinc/cp-zookeeper:7.5.0
+#     environment:
+#       ZOOKEEPER_CLIENT_PORT: 2181
+#       ZOOKEEPER_TICK_TIME: 2000
+
+#   kafka:
+#     image: confluentinc/cp-kafka:7.5.0
+#     depends_on:
+#       - zookeeper
+#     ports:
+#       - "9092:9092"
+#     environment:
+#       KAFKA_BROKER_ID: 1
+#       KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+#       KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092"
+#       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+#       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+#       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+#       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+#   user-service:
+#     build: ./services/user-service
+#     ports:
+#       - "3001:3001"
+#     volumes:
+#       - ./services/user-service:/app
+#       - /app/node_modules
+#     command: npm run dev
+#     environment:
+#      DATABASE_URL: "postgresql://postgres.gqfuewunoyjmwfhnhcoo:12_Iaraiqra_12@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+#       REDIS_URL: "redis://redis:6379"
+#       JWT_SECRET: supersecret
+#     depends_on:
+#       redis:
+#         condition: service_healthy
+
+#   post-service:
+#     build: ./services/post-service
+#     ports:
+#       - "3002:3002"
+#     volumes:
+#       - ./services/post-service:/app
+#       - /app/node_modules
+#     command: npm run dev
+#     environment:
+#       DATABASE_URL: "postgresql://postgres.gqfuewunoyjmwfhnhcoo:12_Iaraiqra_12@aws-0-ap-southeast-1.pooler.supabase.com:6543/postgres"
+#       KAFKA_BROKERS: "kafka:9092"
+#       USER_SERVICE_URL: "http://user-service:3001"
+#       JWT_SECRET: supersecret
+#     depends_on:
+#       redis:
+#         condition: service_healthy
+#       kafka:
+#         condition: service_started
+
+#   feed-service:
+#     build: ./services/feed-service
+#     ports:
+#       - "3003:3003"
+#     volumes:
+#       - ./services/feed-service:/app
+#       - /app/node_modules
+#     command: npm run dev
+#     environment:
+#       REDIS_URL: "redis://redis:6379"
+#       KAFKA_BROKERS: "kafka:9092"
+#       POST_SERVICE_URL: "http://post-service:3002"
+#     depends_on:
+#       kafka:
+#         condition: service_started
+#       post-service:
+#         condition: service_started
+
+#   api-gateway:
+#     build: ./services/api-gateway
+#     ports:
+#       - "3000:3000"
+#     volumes:
+#       - ./services/api-gateway:/app
+#       - /app/node_modules
+#     command: npm run dev
+#     environment:
+#       USER_SERVICE_URL: "http://user-service:3001"
+#       POST_SERVICE_URL: "http://post-service:3002"
+#       FEED_SERVICE_URL: "http://feed-service:3003"
+#     depends_on:
+#       user-service:
+#         condition: service_started
+#       post-service:
+#         condition: service_started
+#       feed-service:
+#         condition: service_started
+
+#   frontend:
+#     build: ./frontend
+#     ports:
+#       - "80:3000"
+#     volumes:
+#       - ./frontend:/app
+#       - /app/node_modules
+#     command: npm run dev
+#     environment:
+#       NEXT_PUBLIC_API_URL: "http://localhost:3000"
+#     depends_on:
+#       api-gateway:
+#         condition: service_started
+
+# volumes:
+#   redisdata:
+
+
+
+
+version: "3.9"
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper:2181"
+      KAFKA_ADVERTISED_LISTENERS: "PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT"
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./services/user-service:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      DATABASE_URL: "postgresql://postgres.gqfuewunoyjmwfhnhcoo:12_Iaraiqra_12@aws-1-ap-south-1.pooler.supabase.com:6543/postgres"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: supersecret
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  post-service:
+    build: ./services/post-service
+    ports:
+      - "3002:3002"
+    volumes:
+      - ./services/post-service:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      DATABASE_URL: "postgresql://postgres.gqfuewunoyjmwfhnhcoo:12_Iaraiqra_12@aws-1-ap-south-1.pooler.supabase.com:6543/postgres"
+      REDIS_URL: "redis://redis:6379"
+      KAFKA_BROKERS: "kafka:9092"
+      USER_SERVICE_URL: "http://user-service:3001"
+      JWT_SECRET: supersecret
+    depends_on:
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  feed-service:
+    build: ./services/feed-service
+    ports:
+      - "3003:3003"
+    volumes:
+      - ./services/feed-service:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      REDIS_URL: "redis://redis:6379"
+      KAFKA_BROKERS: "kafka:9092"
+      POST_SERVICE_URL: "http://post-service:3002"
+    depends_on:
+      kafka:
+        condition: service_started
+      post-service:
+        condition: service_started
+
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./services/api-gateway:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      USER_SERVICE_URL: "http://user-service:3001"
+      POST_SERVICE_URL: "http://post-service:3002"
+      FEED_SERVICE_URL: "http://feed-service:3003"
+    depends_on:
+      user-service:
+        condition: service_started
+      post-service:
+        condition: service_started
+      feed-service:
+        condition: service_started
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3000"
+    depends_on:
+      api-gateway:
+        condition: service_started
+
+volumes:
+  redisdata:
