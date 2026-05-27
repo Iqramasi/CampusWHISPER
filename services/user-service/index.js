@@ -22,9 +22,6 @@ const pool = new Pool({
 
 
 
-
-
-
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecret';
 
 // DEBUG
