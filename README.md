@@ -156,14 +156,5 @@ campuswhisper/
 ├── kafka/                 # Topic setup scripts
 ├── .github/workflows/     # CI/CD pipeline
 └── docker-compose.yml     # Full local stack
-```
 
----
-
-## What to say in interviews
-
-> "I introduced Kafka to handle asynchronous feed updates — when a post is created, a `post-created` event is published to Kafka. The feed-service consumes it and updates Redis sorted sets, so the feed reads are always O(log n) from cache, never hitting the DB under load."
-
-> "The API Gateway handles rate limiting centrally, so individual services don't need to implement it. Each service scales independently via Kubernetes HPA based on CPU utilization."
-
-> "Redis serves a dual role — LRU cache for feed queries (60s TTL) and a sorted set for real-time streams ordered by timestamp."
+https://drive.google.com/drive/folders/1-jQI9MPsyFyzzQVY4phcb-xnIWc45ggG
